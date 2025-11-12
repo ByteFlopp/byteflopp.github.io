@@ -1,102 +1,33 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>3D Sphere and Cube</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cube</title>
 <style>
-body{margin:0;overflow:hidden;background:black}
-canvas{display:block}
+html,body{height:100%;margin:0;background:#0b0c10;display:grid;place-items:center}
+.scene{width:240px;height:240px;perspective:800px}
+.cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 6s linear infinite}
+.face{position:absolute;inset:0;display:grid;place-items:center;font:600 24px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji;color:#fff;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15)}
+.face--front{transform:translateZ(120px)}
+.face--back{transform:rotateY(180deg) translateZ(120px)}
+.face--right{transform:rotateY(90deg) translateZ(120px)}
+.face--left{transform:rotateY(-90deg) translateZ(120px)}
+.face--top{transform:rotateX(90deg) translateZ(120px)}
+.face--bottom{transform:rotateX(-90deg) translateZ(120px)}
+@keyframes spin{to{transform:rotateX(360deg) rotateY(360deg)}}
 </style>
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-<script>
-let scene=new THREE.Scene()
-let camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000)
-let renderer=new THREE.WebGLRenderer({antialias:true})
-renderer.setSize(innerWidth,innerHeight)
-document.body.appendChild(renderer.domElement)
-
-let controls=new THREE.OrbitControls(camera,renderer.domElement)
-controls.enableDamping=true
-controls.enablePan=false
-
-let light=new THREE.PointLight(0xffffff,2)
-light.position.set(5,5,5)
-scene.add(light)
-scene.add(new THREE.AmbientLight(0x202020))
-
-let sphere=new THREE.Mesh(
- new THREE.SphereGeometry(1.5,32,32),
- new THREE.MeshStandardMaterial({color:0x00ff00})
-)
-scene.add(sphere)
-
-let cube=new THREE.Mesh(
- new THREE.BoxGeometry(0.5,0.5,0.5),
- new THREE.MeshStandardMaterial({color:0xffffff})
-)
-cube.position.set(3,0,0)
-scene.add(cube)
-
-camera.position.set(0,2,6)
-
-let keys={}
-onkeydown=e=>keys[e.key.toLowerCase()]=true
-onkeyup=e=>keys[e.key.toLowerCase()]=false
-
-let raycaster=new THREE.Raycaster(),mouse=new THREE.Vector2()
-let dragging=false,dragOffset=new THREE.Vector3()
-
-onmousedown=e=>{
- mouse.x=(e.clientX/innerWidth)*2-1
- mouse.y=-(e.clientY/innerHeight)*2+1
- raycaster.setFromCamera(mouse,camera)
- let hit=raycaster.intersectObject(cube)
- if(hit.length>0){dragging=true;dragOffset.copy(hit[0].point).sub(cube.position)}
-}
-onmouseup=()=>dragging=false
-onmousemove=e=>{
- if(!dragging)return
- mouse.x=(e.clientX/innerWidth)*2-1
- mouse.y=-(e.clientY/innerHeight)*2+1
- raycaster.setFromCamera(mouse,camera)
- let plane=new THREE.Plane(new THREE.Vector3(0,0,1),0)
- let p=new THREE.Vector3()
- raycaster.ray.intersectPlane(plane,p)
- cube.position.copy(p.sub(dragOffset))
-}
-
-function moveCamera(){
- let forward=new THREE.Vector3()
- camera.getWorldDirection(forward)
- let right=new THREE.Vector3().crossVectors(forward,camera.up).normalize()
- if(keys['w'])camera.position.addScaledVector(forward,0.1)
- if(keys['s'])camera.position.addScaledVector(forward,-0.1)
- if(keys['a'])camera.position.addScaledVector(right,-0.1)
- if(keys['d'])camera.position.addScaledVector(right,0.1)
-}
-
-function animate(){
- requestAnimationFrame(animate)
- sphere.rotation.y+=0.01
- if(!dragging){
-  let dir=new THREE.Vector3().subVectors(sphere.position,cube.position)
-  let d=dir.length()
-  if(d>1.5){dir.normalize().multiplyScalar(0.02);cube.position.add(dir)}
- }
- moveCamera()
- controls.update()
- renderer.render(scene,camera)
-}
-animate()
-
-onresize=()=>{
- camera.aspect=innerWidth/innerHeight
- camera.updateProjectionMatrix()
- renderer.setSize(innerWidth,innerHeight)
-}
-</script>
+<div class="scene">
+  <div class="cube">
+    <div class="face face--front"></div>
+    <div class="face face--back"></div>
+    <div class="face face--right"></div>
+    <div class="face face--left"></div>
+    <div class="face face--top"></div>
+    <div class="face face--bottom"></div>
+  </div>
+</div>
 </body>
 </html>
