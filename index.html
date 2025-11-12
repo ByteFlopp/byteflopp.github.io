@@ -4,30 +4,54 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Cube</title>
-<style>
-html,body{height:100%;margin:0;background:#0b0c10;display:grid;place-items:center}
-.scene{width:240px;height:240px;perspective:800px}
-.cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 6s linear infinite}
-.face{position:absolute;inset:0;display:grid;place-items:center;font:600 24px/1.2 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica Neue,Arial,Apple Color Emoji,Segoe UI Emoji;color:#fff;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15)}
-.face--front{transform:translateZ(120px)}
-.face--back{transform:rotateY(180deg) translateZ(120px)}
-.face--right{transform:rotateY(90deg) translateZ(120px)}
-.face--left{transform:rotateY(-90deg) translateZ(120px)}
-.face--top{transform:rotateX(90deg) translateZ(120px)}
-.face--bottom{transform:rotateX(-90deg) translateZ(120px)}
-@keyframes spin{to{transform:rotateX(360deg) rotateY(360deg)}}
-</style>
+<style>html,body{height:100%;margin:0;background:#0b0c10}canvas{display:block}</style>
 </head>
 <body>
-<div class="scene">
-  <div class="cube">
-    <div class="face face--front"></div>
-    <div class="face face--back"></div>
-    <div class="face face--right"></div>
-    <div class="face face--left"></div>
-    <div class="face face--top"></div>
-    <div class="face face--bottom"></div>
-  </div>
-</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+import { OBJLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/OBJLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x222222,1));
+const dir=new THREE.DirectionalLight(0xffffff,1.2);
+dir.position.set(2,3,4);
+scene.add(dir);
+
+camera.position.set(2.5,1.8,3.5);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+
+const tex=new THREE.TextureLoader().load('floppacube.jpg');
+tex.anisotropy=16;
+const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.4,metalness:.1});
+
+const loader=new OBJLoader();
+let model=new THREE.Group();
+scene.add(model);
+
+loader.load('FloppaCube.obj',o=>{
+  o.traverse(n=>{if(n.isMesh){n.material=mat;n.castShadow=true;n.receiveShadow=true}});
+  const box=new THREE.Box3().setFromObject(o);
+  const size=new THREE.Vector3(); box.getSize(size);
+  const center=new THREE.Vector3(); box.getCenter(center);
+  const s=2/Math.max(size.x,size.y,size.z);
+  o.scale.setScalar(s);
+  o.position.sub(center.multiplyScalar(s));
+  model.add(o);
+});
+
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+let t=0;
+(function anim(){requestAnimationFrame(anim);t+=.01;model.rotation.y=t;controls.update();renderer.render(scene,camera)})();
+</script>
 </body>
 </html>
