@@ -1,57 +1,75 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cube</title>
-<style>html,body{height:100%;margin:0;background:#0b0c10}canvas{display:block}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FloppaCube</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #0b0c10;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
 </head>
 <body>
-<script type="module">
-import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
-import { OBJLoader } from 'https://unpkg.com/three@0.165.0/examples/jsm/loaders/OBJLoader.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js';
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/OBJLoader.js"></script>
 
-const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,1000);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(devicePixelRatio);
-document.body.appendChild(renderer.domElement);
+  <script>
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x222222,1));
-const dir=new THREE.DirectionalLight(0xffffff,1.2);
-dir.position.set(2,3,4);
-scene.add(dir);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
 
-camera.position.set(2.5,1.8,3.5);
 
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const directional = new THREE.DirectionalLight(0xffffff, 1);
+    directional.position.set(1, 1, 1);
+    scene.add(directional);
 
-const tex=new THREE.TextureLoader().load('floppacube.jpg');
-tex.anisotropy=16;
-const mat=new THREE.MeshStandardMaterial({map:tex,roughness:.4,metalness:.1});
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load('floppacube.jpg');
 
-const loader=new OBJLoader();
-let model=new THREE.Group();
-scene.add(model);
+    const objLoader = new THREE.OBJLoader();
+    objLoader.load('FloppaCube.obj', (object) => {
+      object.traverse(function(child) {
+        if (child.isMesh) {
+          child.material.map = texture;
+        }
+      });
+      object.scale.set(2, 2, 2);
+      object.position.set(0, 0, 0);
+      scene.add(object);
 
-loader.load('FloppaCube.obj',o=>{
-  o.traverse(n=>{if(n.isMesh){n.material=mat;n.castShadow=true;n.receiveShadow=true}});
-  const box=new THREE.Box3().setFromObject(o);
-  const size=new THREE.Vector3(); box.getSize(size);
-  const center=new THREE.Vector3(); box.getCenter(center);
-  const s=2/Math.max(size.x,size.y,size.z);
-  o.scale.setScalar(s);
-  o.position.sub(center.multiplyScalar(s));
-  model.add(o);
-});
 
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+      function animate() {
+        requestAnimationFrame(animate);
+        object.rotation.y += 0.01;
+        object.rotation.x += 0.005;
+        renderer.render(scene, camera);
+      }
+      animate();
+    });
 
-let t=0;
-(function anim(){requestAnimationFrame(anim);t+=.01;model.rotation.y=t;controls.update();renderer.render(scene,camera)})();
-</script>
+    camera.position.z = 5;
+
+ 
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
