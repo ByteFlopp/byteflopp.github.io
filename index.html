@@ -24,26 +24,34 @@
   light.position.set(5, 5, 5).normalize();
   scene.add(light);
 
-  let objModel;
   const loader = new THREE.OBJLoader();
+  let models = ["model1.obj", "model2.obj"];
+  let currentIndex = 0;
+  let objModel = null;
 
-  loader.load('model.obj', function(object) {
+  function loadModel(path) {
+      if (objModel) {
+          scene.remove(objModel);
+          objModel = null;
+      }
+      loader.load(path, function(object) {
+          const box = new THREE.Box3().setFromObject(object);
+          const center = box.getCenter(new THREE.Vector3());
+          object.position.sub(center);
+          const size = box.getSize(new THREE.Vector3()).length();
+          const scale = 2 / size;
+          object.scale.setScalar(scale);
+          objModel = object;
+          scene.add(objModel);
+      });
+  }
 
-    const box = new THREE.Box3().setFromObject(object);
-    const center = box.getCenter(new THREE.Vector3());
-    object.position.sub(center);
+  loadModel(models[currentIndex]);
 
- 
-    const size = box.getSize(new THREE.Vector3()).length();
-    const scale = 2 / size;
-    object.scale.setScalar(scale);
-
-    objModel = object;
-    scene.add(objModel);
-  }, undefined, function(err) { console.error(err); });('model.obj', function(object) {
-    objModel = object;
-    scene.add(objModel);
-  });
+  setInterval(() => {
+    currentIndex = (currentIndex + 1) % models.length;
+    loadModel(models[currentIndex]);
+  }, 10000);
 
   function animate() {
     requestAnimationFrame(animate);
