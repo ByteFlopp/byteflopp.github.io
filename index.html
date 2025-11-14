@@ -24,34 +24,26 @@
   light.position.set(5, 5, 5).normalize();
   scene.add(light);
 
+  let objModel;
   const loader = new THREE.OBJLoader();
-  let models = ["model1.obj", "model2.obj"];
-  let currentIndex = 0;
-  let objModel = null;
 
-  function loadModel(path) {
-      if (objModel) {
-          scene.remove(objModel);
-          objModel = null;
-      }
-      loader.load(path, function(object) {
-          const box = new THREE.Box3().setFromObject(object);
-          const center = box.getCenter(new THREE.Vector3());
-          object.position.sub(center);
-          const size = box.getSize(new THREE.Vector3()).length();
-          const scale = 2 / size;
-          object.scale.setScalar(scale);
-          objModel = object;
-          scene.add(objModel);
-      });
-  }
+  loader.load('model3.obj', function(object) {
 
-  loadModel(models[currentIndex]);
+    const box = new THREE.Box3().setFromObject(object);
+    const center = box.getCenter(new THREE.Vector3());
+    object.position.sub(center);
 
-  setInterval(() => {
-    currentIndex = (currentIndex + 1) % models.length;
-    loadModel(models[currentIndex]);
-  }, 10000);
+ 
+    const size = box.getSize(new THREE.Vector3()).length();
+    const scale = 2 / size;
+    object.scale.setScalar(scale);
+
+    objModel = object;
+    scene.add(objModel);
+  }, undefined, function(err) { console.error(err); });('model3.obj', function(object) {
+    objModel = object;
+    scene.add(objModel);
+  });
 
   function animate() {
     requestAnimationFrame(animate);
@@ -69,3 +61,4 @@
 </script>
 </body>
 </html>
+
