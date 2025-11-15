@@ -21,7 +21,7 @@
   document.body.appendChild(renderer.domElement);
 
   const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5, 5, 5).normalize();
+  light.position.set(5, 5, 5);
   scene.add(light);
 
   let objModel;
@@ -33,14 +33,10 @@
     const center = box.getCenter(new THREE.Vector3());
     object.position.sub(center);
 
- 
     const size = box.getSize(new THREE.Vector3()).length();
     const scale = 2 / size;
     object.scale.setScalar(scale);
 
-    objModel = object;
-    scene.add(objModel);
-  }, undefined, function(err) { console.error(err); });('model4.obj', function(object) {
     objModel = object;
     scene.add(objModel);
   });
@@ -61,4 +57,3 @@
 </script>
 </body>
 </html>
-
