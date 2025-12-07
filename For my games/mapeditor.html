@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Map Editor</title>
+<style>
+  body { background:#111; color:#eee; font-family:Arial; margin:20px; }
+  #grid { margin-top:20px; display:grid; gap:2px; }
+  .cell {
+    width:30px; height:30px; background:#222; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:#aaa; user-select:none;
+  }
+  .toolbar button {
+    margin:4px; padding:6px 12px; font-size:14px;
+  }
+</style>
+</head>
+<body>
+<h2>Редактор Карт</h2>
+<div class="toolbar">
+  Размер: <input id="size" type="number" value="10" min="3" max="50">
+  <button onclick="createGrid()">Создать карту</button>
+  <br><br>
+  Текущий обьект: 
+  <select id="tile">
+    <option value="0">0 - Воздух</option>
+    <option value="1">1 - Зелёная стена</option>
+    <option value="2">2 - Спавн игрока</option>
+    <option value="3">3 - Вода</option>
+    <option value="4">4 - Земляная стена</option>
+    <option value="5">5 - Каменная стена</option>
+    <option value="8">8 - Дерево</option>
+
+  </select>
+  <button onclick="exportMap()">Экспорт</button>
+</div>
+
+<div id="grid"></div>
+
+<script>
+let map = [];
+
+function createGrid(){
+  const n = parseInt(document.getElementById('size').value);
+  const grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${n}, 30px)`;
+
+  map = Array.from({length:n},()=>Array(n).fill(0));
+
+  grid.innerHTML = '';
+  for(let y=0;y<n;y++){
+    for(let x=0;x<n;x++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.dataset.x=x;
+      cell.dataset.y=y;
+      cell.onclick = () => setTile(x,y,cell);
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function setTile(x,y,cell){
+  const val = parseInt(document.getElementById('tile').value);
+  map[y][x] = val;
+  cell.style.background = colorOf(val);
+  cell.textContent = val===0?'' : val;
+}
+
+function colorOf(v){
+  switch(v){
+    case 1: return '#56bf1d';
+    case 3: return '#1d5bbf';
+    case 4: return '#3d280f';
+    case 5: return '#6e6e80';
+    case 2: return '#ff00aa';
+    case 8: return '#8B4513';
+    default: return '#222';
+  }
+}
+
+function exportMap(){
+  const txt = JSON.stringify(map);
+  alert("Карта скопирована в буфер!\n"+txt);
+  navigator.clipboard.writeText(txt);
+}
+
+createGrid();
+</script>
+</body>
+</html>
